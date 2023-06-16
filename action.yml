@@ -1,0 +1,24 @@
+name: 'Command Exists'
+description: 'Checks if a command exists in the current environment and outputs true|false'
+author: 'Karl Bode'
+inputs:
+  command:
+    required: true
+    description: 'The command to check'
+outputs:
+  exists:
+    description: 'Result of check (true|false)'
+    value: ${{ steps.run-check.outputs.exists }}
+runs:
+  using: composite
+  steps:
+    - name: Check if command exists
+      id: run-check
+      shell: bash
+      run: |
+        if command -v ${{ inputs.command }} &> /dev/null
+        then
+          echo "exists=true" >> $GITHUB_OUTPUT
+        else
+          echo "exists=false" >> $GITHUB_OUTPUT
+        fi

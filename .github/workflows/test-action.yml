@@ -1,0 +1,27 @@
+name: Test Action
+
+on:
+    push:
+    workflow_dispatch:
+
+jobs:
+    test-action-positive:
+        runs-on: ubuntu-latest
+        steps:
+        - uses: actions/checkout@v3
+        - uses: ./
+          id: test-action
+          with:
+              command: ls
+        - run: exit 1
+          if: ${{ steps.test-action.outputs.exists == 'false' }}
+    test-action-negative:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v3
+            - uses: ./
+              id: test-action
+              with:
+                  command: foo
+            - run: exit 1
+              if: ${{ steps.test-action.outputs.exists != 'false' }}

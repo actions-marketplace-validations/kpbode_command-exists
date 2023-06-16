@@ -1,0 +1,36 @@
+name: Create Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    permissions:
+        contents: write
+    steps:
+      - uses: actions/checkout@v3
+      - name: Conventional Changelog Action
+        id: generate-changelog
+        uses: TriPSs/conventional-changelog-action@v3
+        with:
+          github-token: ${{ secrets.github_token }}
+          preset: conventional-changelog-conventionalcommits
+          version-file: version.yml
+          skip-tag: true
+          output-file: false
+
+      - name: Create Github Release
+        run: |
+          gh release create ${{ steps.generate-changelog.outputs.tag }} \
+          --latest \
+          --notes "${{ steps.generate-changelog.outputs.clean_changelog }}" \
+          --generate-notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+      # Creates major tags which are useful when consumers don't pin the exact version
+      # They say it's alpha but for now it's working
+      - name: Create Action Release
+        uses: actions/publish-action@v0.2.2
+        with:
+          source-tag: v${{ steps.generate-changelog.outputs.version }}
